@@ -11,6 +11,7 @@ import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -26,6 +27,7 @@ public class Main {
         double min;
         double max;
         List<Fruit> result;
+        Fruit singleResult;
         while (true){
             System.out.println("What do you wanna do? \nAvailable commands: \n" +
                     "name - search a fruit by its name\ngenus - search fruits by its genus \n" +
@@ -35,15 +37,24 @@ public class Main {
                 case "name":
                     System.out.println("Please provide the name starting with capital letter");
                     name = scanner.nextLine();
-                    System.out.println(searchByName(name, gson).toString());
+                    singleResult = searchByName(name, gson);
+                    if (singleResult != null){
+                        System.out.println(singleResult.toString());
+                    } else {
+                        System.out.println("Couldn't fetch data, please try again!");
+                    }
                     break;
                 case "genus":
                     System.out.println("Please provide the genus starting with capital letter");
                     genus = scanner.nextLine();
                     result = searchByGenus(genus, gson);
-                    for (Fruit fruit:
-                            result) {
-                        System.out.println(fruit.toString());
+                    if (result != null){
+                        for (Fruit fruit:
+                                result) {
+                            System.out.println(fruit.toString());
+                        }
+                    } else {
+                        System.out.println("Couldn't fetch data, please try again!");
                     }
                     break;
                 case "nutritions":
@@ -54,9 +65,13 @@ public class Main {
                     System.out.println("Provide the maximum value of the nutrient: ");
                     max = Double.parseDouble(scanner.nextLine());
                     result = searchByNutrition(type, min, max, gson);
-                    for (Fruit fruit:
-                            result) {
-                        System.out.println(fruit.toString());
+                    if (result != null){
+                        for (Fruit fruit:
+                                result) {
+                            System.out.println(fruit.toString());
+                        }
+                    } else {
+                        System.out.println("Couldn't fetch data, please try again!");
                     }
                     break;
                 case "q":
@@ -71,7 +86,14 @@ public class Main {
     public static Fruit searchByName(String name, Gson gson){
         String url="https://www.fruityvice.com/api/fruit/" + name;
         StringBuffer response = fetchFruits(url);
-        Fruit fruit = gson.fromJson(response.toString(), Fruit.class);
+
+        Fruit fruit;
+        if (!response.isEmpty()){
+            fruit = gson.fromJson(response.toString(), Fruit.class);
+        } else {
+            fruit = null;
+        }
+
         return fruit;
     }
 
@@ -104,9 +126,13 @@ public class Main {
 
         String url="https://www.fruityvice.com/api/fruit/genus/" + genus;
         StringBuffer response = fetchFruits(url);
+        List<Fruit> fruits;
+        if (!response.isEmpty()){
+            fruits = Arrays.asList(gson.fromJson(response.toString(), Fruit[].class));
+        } else {
+            fruits = null;
+        }
 
-
-        List<Fruit> fruits = Arrays.asList(gson.fromJson(response.toString(), Fruit[].class));
         return fruits;
     }
 
@@ -114,8 +140,13 @@ public class Main {
 
         String url="https://www.fruityvice.com/api/fruit/" + type + "?min=" + min +"&max=" + max;
         StringBuffer response = fetchFruits(url);
+        List<Fruit> fruits;
+        if (!response.isEmpty()){
+            fruits = Arrays.asList(gson.fromJson(response.toString(), Fruit[].class));
+        } else {
+            fruits = null;
+        }
 
-        List<Fruit> fruits = Arrays.asList(gson.fromJson(response.toString(), Fruit[].class));
         return fruits;
     }
 
